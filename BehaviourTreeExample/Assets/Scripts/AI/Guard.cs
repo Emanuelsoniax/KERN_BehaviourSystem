@@ -1,29 +1,153 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.AI;
 
 public class Guard : MonoBehaviour
 {
-    private BTBaseNode tree;
+    [SerializeField] private Transform viewTransform;
+
     private NavMeshAgent agent;
     private Animator animator;
+    private Blackboard blackboard = new Blackboard();
+    [SerializeReference] public BaseScriptableObject[] variables;
+    [SerializeField] private GameObject[] waypoints;
+    [SerializeField] private GameObject[] weapons;
+    [SerializeField] private Transform weaponHoldTransform;
+
+    private GameObject player;
+    public UIElement UI;
+
+    public VariableBoolean HasWeapon
+    {
+        get { return HasWeapon = blackboard.GetVariable<VariableBoolean>("VariableBoolean_Guard_HasWeapon"); }
+        set { blackboard.dictionary["VariableBoolean_Guard_HasWeapon"] = value; }
+    }
+    public VariableGameObject Target
+    {
+        get { return Target = blackboard.GetVariable<VariableGameObject>("VariableGameObject_Guard_Target"); }
+        set { blackboard.dictionary["VariableGameObject_Guard_Target"] = value; }
+    }
+    public VariableFloat WalkSpeed
+    {
+        get { return WalkSpeed = blackboard.GetVariable<VariableFloat>("VariableFloat_Guard_WalkSpeed"); }
+        set { blackboard.dictionary["VariableGameObject_Guard_WalkSpeed"] = value; }
+    }
+    public VariableFloat StopDistance
+    {
+        get { return StopDistance = blackboard.GetVariable<VariableFloat>("VariableFloat_Guard_StoppingDistance"); }
+        set { blackboard.dictionary["VariableGameObject_Guard_StoppingDistance"] = value; }
+    }
+    public VariableFloat SightRange
+    {
+        get { return StopDistance = blackboard.GetVariable<VariableFloat>("VariableFloat_Guard_SightRange"); }
+        set { blackboard.dictionary["VariableGameObject_Guard_SightRange"] = value; }
+    }
+    public VariableFloat ViewAngleInDegrees
+    {
+        get { return StopDistance = blackboard.GetVariable<VariableFloat>("VariableFloat_Guard_ViewAngleInDegrees"); }
+        set { blackboard.dictionary["VariableGameObject_Guard_ViewAngleInDegrees"] = value; }
+    }
+    public VariableFloat AttackRange
+    {
+        get { return StopDistance = blackboard.GetVariable<VariableFloat>("VariableFloat_Guard_AttackRange"); }
+        set { blackboard.dictionary["VariableGameObject_Guard_AttackRange"] = value; }
+    }
+
+    //BTNodes
+    private BTBaseNode tree;
+    private BTBaseNode patrol;
+    private BTBaseNode attack;
+    private BTBaseNode grabWeapon;
 
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         animator = GetComponentInChildren<Animator>();
+        player = FindObjectOfType<Player>().gameObject;
+
+        foreach (BaseScriptableObject variable in variables)
+        {
+            blackboard.AddVariable(variable.name, variable);
+        }
+
+        Target.Value = waypoints[0];
+        
     }
 
     private void Start()
     {
-        //Create your Behaviour Tree here!
+        #region Patrol Sequence
+        //patrol sequence
+        patrol = new BTParallelNode(new BTBaseNode[3]{
+            new BTUpdateUI(UI, "Patrolling"),
+                    //condition node
+                    new BTInverterNode(new BTCheckForPlayer(viewTransform, SightRange, ViewAngleInDegrees, player)),
+                    //waypoint sequence
+                        new BTSequenceNode(
+                            new BTSetTarget(waypoints, Target),
+                            new BTPlayAnimation(animator, "Rifle Walk"),
+                            new BTMoveToTarget(Target, WalkSpeed, StopDistance, agent),
+                            new BTPlayAnimation(animator, "Idle"),
+                            new BTWaitNode(1)
+                    )
+                    }
+        ) ;
+
+        #endregion
+
+
+
+        #region Attack Sequence
+
+        attack = new BTSequenceNode(
+               new BTFallbackNode(new BTBaseNode[2]{
+                   //grab weapon sequence
+                   new BTFallbackNode(new BTBaseNode[2]
+                   {
+                       //condition node
+                       new BTInverterNode(new BTCheckForWeapon(HasWeapon)),
+
+                       new BTSequenceNode(
+                            new BTUpdateUI(UI, "Grabbing Weapon"),
+                            new BTFindWeapon(weapons, Target, transform),
+                            new BTPlayAnimation(animator, "Rifle Walk"),
+                            new BTMoveToTarget(Target, WalkSpeed, StopDistance, agent),
+                            new BTPlayAnimation(animator, "Crouch Idle"),
+                            new BTGrabWeapon(HasWeapon, Target, weaponHoldTransform),
+                            new BTWaitNode(1)
+                       )
+                   }
+                   ),
+                   //attack sequence
+                   new BTParallelNode(new BTBaseNode[2]{
+                        new BTInverterNode(new BTCheckForPlayer(viewTransform, SightRange, ViewAngleInDegrees, player)),
+                        new BTSequenceNode(
+                        new BTUpdateUI(UI, "Attacking"),
+                            new BTSetTarget(new GameObject[]{player}, Target),
+                            new BTPlayAnimation(animator, "Rifle Walk"),
+                            new BTMoveToTarget(Target, WalkSpeed, StopDistance, agent),
+                            new BTAttackPlayer(player.GetComponent<Player>(), 10, this.gameObject),
+                            new BTPlayAnimation(animator, "Kick")
+                       )
+                   })
+                })
+            );; 
+
+        #endregion
+
+
+        tree = new BTFallbackNode(new BTBaseNode[2]{
+            patrol,
+            attack
+        });
+
     }
 
     private void FixedUpdate()
     {
         tree?.Run();
+        Debug.Log(HasWeapon.Value);
+        Debug.Log(Target.Value.name);
     }
 
     //private void OnDrawGizmos()

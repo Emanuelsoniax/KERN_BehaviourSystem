@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public class Blackboard : MonoBehaviour
+public class Blackboard
 {
     [SerializeReference] public List<BaseScriptableObject> baseSharedVariables = new List<BaseScriptableObject>();
 
-    private Dictionary<string, object> dictionary = new Dictionary<string, object>();
+    public Dictionary<string, object> dictionary = new Dictionary<string, object>();
 
     public T GetVariable<T>(string name) where T : BaseScriptableObject
     {

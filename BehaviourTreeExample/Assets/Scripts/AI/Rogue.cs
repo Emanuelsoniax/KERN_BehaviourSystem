@@ -6,7 +6,6 @@ using UnityEngine.AI;
 
 public class Rogue : MonoBehaviour
 {
-
     private BTBaseNode tree;
     private NavMeshAgent agent;
     private Animator animator;
