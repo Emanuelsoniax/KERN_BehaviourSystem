@@ -34,8 +34,6 @@ public class BTFindCover : BTBaseNode
         }
 
         target.Value = closestHidingPlace;
-        //Vector3 direction = (closestHidingPlace.transform.position - guard.transform.position).normalized;
-        //target.Value.transform.position = closestHidingPlace.transform.position + (2 * direction);
 
         return TaskStatus.Success;
     }

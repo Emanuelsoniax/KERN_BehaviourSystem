@@ -66,11 +66,13 @@ public class Rogue : MonoBehaviour
     private void Start()
     {
         //follow player sequence
-        followPlayer = new BTParallelNode(new BTBaseNode[4]{
+        followPlayer = new BTParallelNode(new BTBaseNode[3]{
                             new BTUpdateUI(UI, "Following Player"),
                             new BTInverterNode(new BTCheckEnemyStatus(FindObjectOfType<Guard>(), player)),
-                            new BTPlayAnimation(animator, "Walk Crouch"),
-                            new BTFollowPlayer(player, agent)
+                            new BTSequenceNode(new BTBaseNode[]{
+                                new BTPlayAnimation(animator, "Walk Crouch"),
+                                new BTFollowPlayer(player, agent)
+                            })
         });
 
         //hide sequence
@@ -79,15 +81,15 @@ public class Rogue : MonoBehaviour
                     new BTFindCover(transform, Target, hidingPlaces),
                     new BTPlayAnimation(animator, "Walk Crouch"),
                     new BTHide(FindObjectOfType<Guard>(), Target, WalkSpeed, agent),
-                    new BTWaitNode(2),
                     new BTPlayAnimation(animator, "Crouch Idle"),
+                    new BTWaitNode(5),
                     new BTUpdateUI(UI, "Throwing Bomb"),
                     new BTThrowBomb(bombPrefab, player, 2)
                );
 
-        tree = new BTFallbackNode(new BTBaseNode[1]
+        tree = new BTFallbackNode(new BTBaseNode[2]
         {
-            //followPlayer,
+            followPlayer,
             hide
         });
     }

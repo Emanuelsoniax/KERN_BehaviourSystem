@@ -22,9 +22,9 @@ public class BTMoveToTarget : BTBaseNode
     {
         agent.SetDestination(target.Value.transform.position);
         agent.speed = movementSpeed.Value;
-        if(Vector3.Distance(agent.transform.position, target.Value.transform.position) <= 0.5f)
+        if(agent.remainingDistance <= 0.5f)
         {
-            agent.SetDestination(agent.transform.position);
+            //agent.SetDestination(agent.transform.position);
             return TaskStatus.Success;
         }
         else return TaskStatus.Running;

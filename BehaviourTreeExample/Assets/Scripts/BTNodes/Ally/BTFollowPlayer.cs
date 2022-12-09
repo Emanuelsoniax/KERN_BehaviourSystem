@@ -21,7 +21,11 @@ public class BTFollowPlayer : BTBaseNode
         if (Vector3.Distance(agent.transform.position, player.transform.position) <= 5)
         {
             agent.SetDestination(agent.transform.position);
-            return TaskStatus.Success;
+            if(agent.remainingDistance == 0)
+            {
+             return TaskStatus.Success;
+            }
+            return TaskStatus.Running;
         }
         else return TaskStatus.Running;
     }

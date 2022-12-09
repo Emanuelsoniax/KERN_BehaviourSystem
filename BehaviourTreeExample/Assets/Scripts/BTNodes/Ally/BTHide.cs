@@ -26,13 +26,13 @@ public class BTHide : BTBaseNode
         agent.SetDestination(target.Value.transform.position + (2 * direction));
         agent.speed = movementSpeed.Value;
 
-        GameObject targetPoint = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        targetPoint.transform.position = target.Value.transform.position + (2 * direction);
-        targetPoint.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-        agent.SetDestination(targetPoint.transform.position);
-        GameObject.Destroy(targetPoint,0.1f);
+        //GameObject targetPoint = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //targetPoint.transform.position = target.Value.transform.position + (2 * direction);
+        //targetPoint.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        //agent.SetDestination(targetPoint.transform.position);
+        //GameObject.Destroy(targetPoint,0.1f);
 
-        if((Vector3.Distance(agent.transform.position, target.Value.transform.position) <= 0.5f)){
+        if((agent.remainingDistance <= 0.5f)){
             return TaskStatus.Success;
         }
         return TaskStatus.Running;
