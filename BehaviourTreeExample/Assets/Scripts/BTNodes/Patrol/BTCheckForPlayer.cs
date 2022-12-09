@@ -30,6 +30,8 @@ public class BTCheckForPlayer : BTBaseNode
         }
     }
 
+    //source:
+    //https://answers.unity.com/questions/362763/raycast-over-arc.html
     private GameObject RaycastSweep()
     {
         Vector3 startPos = viewTransform.position; //start position !

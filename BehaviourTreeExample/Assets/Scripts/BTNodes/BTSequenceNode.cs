@@ -24,7 +24,7 @@ public class BTSequenceNode : BTBaseNode
                     return TaskStatus.Failed;
                 case TaskStatus.Running:
                     return TaskStatus.Running;
-                case TaskStatus.Success: break;
+                case TaskStatus.Success: continue;
             }
         }
         currentIndex = 0;

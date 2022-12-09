@@ -30,33 +30,33 @@ public class Guard : MonoBehaviour
     public VariableFloat WalkSpeed
     {
         get { return WalkSpeed = blackboard.GetVariable<VariableFloat>("VariableFloat_Guard_WalkSpeed"); }
-        set { blackboard.dictionary["VariableGameObject_Guard_WalkSpeed"] = value; }
+        set { blackboard.dictionary["VariableFloat_Guard_WalkSpeed"] = value; }
     }
     public VariableFloat StopDistance
     {
         get { return StopDistance = blackboard.GetVariable<VariableFloat>("VariableFloat_Guard_StoppingDistance"); }
-        set { blackboard.dictionary["VariableGameObject_Guard_StoppingDistance"] = value; }
+        set { blackboard.dictionary["VariableFloat_Guard_StoppingDistance"] = value; }
     }
     public VariableFloat SightRange
     {
         get { return StopDistance = blackboard.GetVariable<VariableFloat>("VariableFloat_Guard_SightRange"); }
-        set { blackboard.dictionary["VariableGameObject_Guard_SightRange"] = value; }
+        set { blackboard.dictionary["VariableFloat_Guard_SightRange"] = value; }
     }
     public VariableFloat ViewAngleInDegrees
     {
         get { return StopDistance = blackboard.GetVariable<VariableFloat>("VariableFloat_Guard_ViewAngleInDegrees"); }
-        set { blackboard.dictionary["VariableGameObject_Guard_ViewAngleInDegrees"] = value; }
+        set { blackboard.dictionary["VariableFloat_Guard_ViewAngleInDegrees"] = value; }
     }
     public VariableFloat AttackRange
     {
         get { return StopDistance = blackboard.GetVariable<VariableFloat>("VariableFloat_Guard_AttackRange"); }
-        set { blackboard.dictionary["VariableGameObject_Guard_AttackRange"] = value; }
+        set { blackboard.dictionary["VariableFloat_Guard_AttackRange"] = value; }
     }
 
     //BTNodes
     private BTBaseNode tree;
     private BTBaseNode patrol;
-    private BTBaseNode attack;
+    public BTBaseNode attack;
     private BTBaseNode grabWeapon;
 
     private void Awake()
@@ -78,31 +78,28 @@ public class Guard : MonoBehaviour
     {
         #region Patrol Sequence
         //patrol sequence
-        patrol = new BTParallelNode(new BTBaseNode[3]{
-            new BTUpdateUI(UI, "Patrolling"),
+        patrol = new BTParallelNode(new BTBaseNode[2]{
                     //condition node
                     new BTInverterNode(new BTCheckForPlayer(viewTransform, SightRange, ViewAngleInDegrees, player)),
                     //waypoint sequence
-                        new BTSequenceNode(
-                            new BTSetTarget(waypoints, Target),
-                            new BTPlayAnimation(animator, "Rifle Walk"),
-                            new BTMoveToTarget(Target, WalkSpeed, StopDistance, agent),
-                            new BTPlayAnimation(animator, "Idle"),
-                            new BTWaitNode(1)
+                    new BTSequenceNode(
+                        new BTUpdateUI(UI, "Patrolling"),
+                        new BTSetTarget(waypoints, Target),
+                        new BTPlayAnimation(animator, "Rifle Walk"),
+                        new BTMoveToTarget(Target, WalkSpeed, StopDistance, agent),
+                        new BTPlayAnimation(animator, "Idle"),
+                        new BTWaitNode(1)
                     )
-                    }
-        ) ;
+                 }
+        );
 
         #endregion
 
-
-
         #region Attack Sequence
 
-        attack = new BTSequenceNode(
-               new BTFallbackNode(new BTBaseNode[2]{
+        attack = new BTFallbackNode(new BTBaseNode[2]{
                    //grab weapon sequence
-                   new BTFallbackNode(new BTBaseNode[2]
+                   new BTParallelNode(new BTBaseNode[2]
                    {
                        //condition node
                        new BTInverterNode(new BTCheckForWeapon(HasWeapon)),
@@ -113,7 +110,7 @@ public class Guard : MonoBehaviour
                             new BTPlayAnimation(animator, "Rifle Walk"),
                             new BTMoveToTarget(Target, WalkSpeed, StopDistance, agent),
                             new BTPlayAnimation(animator, "Crouch Idle"),
-                            new BTGrabWeapon(HasWeapon, Target, weaponHoldTransform),
+                            new BTGrabWeapon(HasWeapon),
                             new BTWaitNode(1)
                        )
                    }
@@ -122,16 +119,16 @@ public class Guard : MonoBehaviour
                    new BTParallelNode(new BTBaseNode[2]{
                         new BTInverterNode(new BTCheckForPlayer(viewTransform, SightRange, ViewAngleInDegrees, player)),
                         new BTSequenceNode(
-                        new BTUpdateUI(UI, "Attacking"),
+                            new BTUpdateUI(UI, "Attacking"),
                             new BTSetTarget(new GameObject[]{player}, Target),
                             new BTPlayAnimation(animator, "Rifle Walk"),
                             new BTMoveToTarget(Target, WalkSpeed, StopDistance, agent),
-                            new BTAttackPlayer(player.GetComponent<Player>(), 10, this.gameObject),
+                            new BTAttackPlayer(player.GetComponent<Player>(), 1, gameObject),
                             new BTPlayAnimation(animator, "Kick")
                        )
                    })
-                })
-            );; 
+                });
+          
 
         #endregion
 
@@ -146,8 +143,6 @@ public class Guard : MonoBehaviour
     private void FixedUpdate()
     {
         tree?.Run();
-        Debug.Log(HasWeapon.Value);
-        Debug.Log(Target.Value.name);
     }
 
     //private void OnDrawGizmos()

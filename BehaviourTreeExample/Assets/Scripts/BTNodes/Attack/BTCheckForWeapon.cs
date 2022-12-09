@@ -4,16 +4,16 @@ using UnityEngine;
 
 public class BTCheckForWeapon : BTBaseNode
 {
-    private bool hasWeapon = false;
+    VariableBoolean hasWeapon;
 
     public BTCheckForWeapon(VariableBoolean _hasWeapon)
     {
-        hasWeapon = _hasWeapon.Value;
+        hasWeapon = _hasWeapon;
     }
 
     public override TaskStatus Run()
     {
-        if (hasWeapon)
+        if (hasWeapon.Value)
         {
             return TaskStatus.Success;
         }

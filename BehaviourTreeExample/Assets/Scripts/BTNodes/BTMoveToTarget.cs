@@ -5,10 +5,10 @@ using UnityEngine.AI;
 
 public class BTMoveToTarget : BTBaseNode
 {
-    VariableFloat movementSpeed;
-    VariableFloat stopDistance;
-    NavMeshAgent agent;
-    VariableGameObject target;
+    private VariableFloat movementSpeed;
+    private VariableFloat stopDistance;
+    private NavMeshAgent agent;
+    private VariableGameObject target;
 
     public BTMoveToTarget(VariableGameObject _target, VariableFloat _movementSpeed, VariableFloat _stopDistance, NavMeshAgent _agent)
     {
@@ -22,9 +22,9 @@ public class BTMoveToTarget : BTBaseNode
     {
         agent.SetDestination(target.Value.transform.position);
         agent.speed = movementSpeed.Value;
-        if(Vector3.Distance(agent.transform.position, target.Value.transform.position) <= stopDistance.Value)
+        if(Vector3.Distance(agent.transform.position, target.Value.transform.position) <= 0.5f)
         {
-            Debug.Log("joeee");
+            agent.SetDestination(agent.transform.position);
             return TaskStatus.Success;
         }
         else return TaskStatus.Running;
